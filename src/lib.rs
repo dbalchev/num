@@ -62,8 +62,10 @@ pub use bigint::{BigInt, BigUint};
 pub use rational::{Rational, BigRational};
 pub use complex::Complex;
 pub use integer::Integer;
+pub use bytes::{ToBytes, mod_pow};
 
 pub mod bigint;
 pub mod complex;
 pub mod integer;
 pub mod rational;
+pub mod bytes;

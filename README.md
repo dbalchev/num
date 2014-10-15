@@ -14,7 +14,7 @@ Add this to your `Cargo.toml`:
 ```toml
 [dependencies.num]
 
-git = "https://github.com/dbalchev/num"
+git = "https://github.com/rust-lang/num"
 ```
 
 and this to your crate root:

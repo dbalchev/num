@@ -67,6 +67,7 @@ use std::num::{ToPrimitive, FromPrimitive};
 use std::num::{Zero, One, ToStrRadix, FromStrRadix};
 use std::string::String;
 use std::{uint, i64, u64};
+use bytes::ToBytes;
 
 /// A `BigDigit` is a `BigUint`'s composing element.
 pub type BigDigit = u32;
@@ -810,6 +811,47 @@ impl BigUint {
         return self.data.len()*BigDigit::bits - zeros;
     }
 }
+pub struct BigUintBytesIterator<'lt> {
+    data: & 'lt [u32],
+    digit_pos: uint,
+    byte_pos: uint
+}
+impl <'lt> Iterator<u8> for BigUintBytesIterator<'lt> {
+    fn next(& mut self) -> Option<u8> {
+        if self.digit_pos >= self.data.len() {
+            return None;
+        }
+        let res = ((self.data[self.digit_pos] >> (8 * self.byte_pos)) 
+                & 0xff) as u8;
+        self.byte_pos += 1;
+        if self.byte_pos == 4 {
+            self.byte_pos = 0;
+            self.digit_pos += 1;
+        }
+        Some(res)
+    }
+}
+impl <'lt> ToBytes<'lt BigUintBytesIterator<'lt>> for BigUint {
+    fn to_bytes(& 'lt self) -> BigUintBytesIterator<'lt> {
+        BigUintBytesIterator{
+            data:self.data.as_slice(),
+            digit_pos:0,
+            byte_pos:0
+        }
+    }
+}
+#[test]
+fn test_tobytes_for_biguint() {
+    let digits = vec![0x44332211u32, 0x88776655u32, 
+        0xCCBBAA99u32, 0x00FFEEDDu32];
+    let bytes = vec![0x11u8,0x22u8, 0x33u8, 0x44u8,
+        0x55u8, 0x66u8, 0x77u8, 0x88u8,
+        0x99u8, 0xAAu8, 0xBBu8, 0xCCu8,
+        0xDDu8, 0xEEu8, 0xFFu8, 0x00u8];
+    let b = BigUint::new(digits);
+    assert_eq!(b.to_bytes().collect::<Vec<u8>>(), bytes);
+}
+
 
 // `DoubleBigDigit` size dependent
 #[inline]
